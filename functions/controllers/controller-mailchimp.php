@@ -12,7 +12,6 @@ class ControllerMailChimp{
         //add_action( 'init' , array( $this, 'init' ) , 10 );
         add_action( 'mc_subscribe_member' , array( $this, 'subscribeMember' ) , 10, 2 );
         add_filter( 'mc_get_lists' , array( $this , 'getLists' ) );
-        add_filter( 'mc_array_to_select' , array( $this , 'array_to_select' ) , 10 , 3 );
     }
 
     public function connect(){
@@ -68,25 +67,23 @@ class ControllerMailChimp{
 
         try{
             $result = $this->mc->lists->subscribe( $listaId , $emails );
-            return $result;
+            return true;
+        }
+        catch (Mailchimp_List_AlreadySubscribed $e) {
+            return 'Você já assinou a newsletter.';
+        } catch (Mailchimp_Email_AlreadySubscribed $e) {
+            return 'Você já assinou a newsletter.';
+        } catch (Mailchimp_Email_NotExists $e) {
+            return 'O e-mail informado não existe.';
+        } catch (Mailchimp_Invalid_Email $e) {
+            return 'O e-mail informado é inválido.';
+        } catch (Mailchimp_List_InvalidImport $e) {
+            return 'Dados inválidos, provavelmente seu e-mail.';
         }
         catch( Exception $e ){
-            return false;
+            //Erro desconhecido
+            return 'Erro ao cadastrar seu e-mail, por favor tente novamente dentro de instantes.';
         }
-    }
-
-    public function array_to_select( $array , $idField, $nameField){
-
-        if( count( $array ) == 0 ){
-            return null;
-        }
-
-        $select = array();
-        foreach( $array as $item ){
-            $select[ $item[ $idField ] ] = $item[ $nameField ];
-        }
-
-        return $select;
     }
 }
 
